@@ -1,0 +1,15 @@
+[Unit]
+Description=Telegram bot on Claude
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=botuser
+WorkingDirectory=/home/botuser/my-bot
+EnvironmentFile=/home/botuser/my-bot/.env
+ExecStart=/home/botuser/my-bot/.venv/bin/python bot.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
