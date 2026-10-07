@@ -6,10 +6,14 @@
 clear
 echo "=== Установка бота ==="
 read -rsp "1) Вставь токен Telegram-бота и нажми Enter (символы не видны): " TG < /dev/tty; echo
-read -rsp "2) Вставь ключ Anthropic (sk-ant-api03-...) и нажми Enter: " AK < /dev/tty; echo
+read -rsp "2) Вставь ключ Anthropic и нажми Enter: " AK < /dev/tty; echo
 TG="${TG//[[:space:]]/}"; AK="${AK//[[:space:]]/}"
-case "$TG" in *:*) ;; *) echo "❌ Токен Telegram не похож на настоящий. Запусти заново."; exit 1;; esac
-case "$AK" in sk-ant-api03-*) ;; *) echo "❌ Ключ Anthropic должен начинаться с sk-ant-api03-. Запусти заново."; exit 1;; esac
+echo "⏳ Проверяю ключи..."
+code=$(curl -s -o /dev/null -w '%{http_code}' "https://api.telegram.org/bot${TG}/getMe")
+[ "$code" = 200 ] || { echo "❌ Telegram не принял токен (код $code). Возьми актуальный токен в @BotFather и запусти заново."; exit 1; }
+code=$(curl -s -o /dev/null -w '%{http_code}' https://api.anthropic.com/v1/models -H "x-api-key: ${AK}" -H "anthropic-version: 2023-06-01")
+[ "$code" = 200 ] || { echo "❌ Anthropic не принял ключ (код $code). Нужен API-ключ с https://platform.claude.com → API Keys → Create Key. Запусти заново."; exit 1; }
+echo "✅ Оба ключа рабочие"
 
 echo "⏳ Ставлю пакеты..."
 DEBIAN_FRONTEND=noninteractive apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq python3-venv git >/dev/null || { echo "❌ Не удалось поставить пакеты"; exit 1; }
